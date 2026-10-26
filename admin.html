@@ -399,6 +399,8 @@
             <li class="nav-item active" data-target="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</li>
             <li class="nav-item" data-target="orders"><i class="fas fa-receipt"></i> Orders & Delivery</li>
             <li class="nav-item" data-target="tableqr"><i class="fas fa-qrcode"></i> Table QR Codes</li>
+            <li class="nav-item" data-target="reports"><i class="fas fa-chart-column"></i> Daily Report</li>
+            <li class="nav-item" onclick="window.open('/kitchen','_blank')"><i class="fas fa-fire-burner"></i> Kitchen Display</li>
             <li class="nav-item" data-target="menu"><i class="fas fa-burger"></i> Menu Catalog</li>
             <li class="nav-item" data-target="restaurants"><i class="fas fa-store"></i> Kitchens</li>
             <li class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-arrow-right-from-bracket"></i> Sign Out</li>
@@ -497,6 +499,23 @@
                         <tbody id="ordersTableBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- DAILY REPORT SECTION -->
+        <div id="reports" class="section">
+            <div class="top-bar">
+                <div>
+                    <h1>Daily Sales Report</h1>
+                    <p style="margin:4px 0 0 0; color:var(--text-muted); font-size:0.95em;">Sales, cash vs UPI and best-selling items for the selected day.</p>
+                </div>
+            </div>
+            <div class="table-card" style="padding:20px;">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px;">
+                    <input type="date" id="reportDate" style="padding:12px; border:1.5px solid #e2e8f0; border-radius:12px;">
+                    <button class="btn-add" id="csvBtn"><i class="fas fa-file-csv"></i> Download CSV</button>
+                </div>
+                <div id="reportBody"></div>
             </div>
         </div>
 
@@ -647,6 +666,47 @@
                 fetch('/telegram', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'notify', orderId: id }) }).catch(() => {});
             }
         };
+        window.toggleStock = (key, isAvailable) => db.ref('dishes/' + key).update({ available: !isAvailable });
+        const dkey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        function reportList() {
+            const inp = document.getElementById('reportDate');
+            if (!inp.value) inp.value = dkey(new Date());
+            return Object.values(window.adminOrders).filter(o => dkey(new Date(o.timestamp)) === inp.value);
+        }
+        function renderReport() {
+            const list = reportList();
+            const sum = (arr) => arr.reduce((a, o) => a + parseFloat(o.total || 0), 0);
+            const total = sum(list);
+            const card = (t, v, c) => `<div style="background:#f8fafc; border-radius:14px; padding:16px;"><div style="font-size:0.8em; color:#64748b; font-weight:700;">${t}</div><div style="font-size:1.5em; font-weight:800; color:${c || '#0f172a'};">${v}</div></div>`;
+            const by = (fn) => { const m = {}; list.forEach(o => { const k = fn(o); m[k] = m[k] || { n: 0, amt: 0 }; m[k].n++; m[k].amt += parseFloat(o.total || 0); }); return m; };
+            const tbl = (m, h) => `<table style="width:100%; margin-top:6px;"><thead><tr><th>${h}</th><th>Orders</th><th>Amount</th></tr></thead><tbody>${Object.keys(m).map(k => `<tr><td>${esc(k)}</td><td>${m[k].n}</td><td>Rs. ${fmt(m[k].amt)}</td></tr>`).join('') || '<tr><td colspan="3" style="color:#94a3b8;">No orders</td></tr>'}</tbody></table>`;
+            const typeName = o => o.orderType === 'dine-in' ? 'Dine-in' : o.orderType === 'parcel' ? 'Parcel' : 'Delivery';
+            const items = {};
+            list.forEach(o => (o.items || []).forEach(i => { items[i.name] = items[i.name] || { q: 0, amt: 0 }; items[i.name].q += i.quantity; items[i.name].amt += i.price * i.quantity; }));
+            const top = Object.keys(items).sort((a, b) => items[b].q - items[a].q).slice(0, 10);
+            const paid = sum(list.filter(o => o.paymentStatus === 'Paid'));
+            document.getElementById('reportBody').innerHTML = `
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px;">
+                    ${card('Total Sales', 'Rs. ' + fmt(total), '#4f46e5')}
+                    ${card('Orders', list.length)}
+                    ${card('Avg Order', 'Rs. ' + fmt(list.length ? total / list.length : 0))}
+                    ${card('Paid', 'Rs. ' + fmt(paid), '#15803d')}
+                    ${card('Pending Payment', 'Rs. ' + fmt(total - paid), '#b45309')}
+                </div>
+                <h3 style="margin:16px 0 4px;">By Payment Method</h3>${tbl(by(o => o.paymentMethod || o.method || 'Cash'), 'Method')}
+                <h3 style="margin:16px 0 4px;">By Order Type</h3>${tbl(by(typeName), 'Type')}
+                <h3 style="margin:16px 0 4px;">Top Selling Items</h3>
+                <table style="width:100%; margin-top:6px;"><thead><tr><th>Item</th><th>Qty Sold</th><th>Amount</th></tr></thead><tbody>${top.map(k => `<tr><td>${esc(k)}</td><td>${items[k].q}</td><td>Rs. ${fmt(items[k].amt)}</td></tr>`).join('') || '<tr><td colspan="3" style="color:#94a3b8;">No sales</td></tr>'}</tbody></table>`;
+        }
+        document.getElementById('reportDate').addEventListener('change', renderReport);
+        document.getElementById('csvBtn').onclick = () => {
+            const list = reportList();
+            const q = v => { v = String(v == null ? '' : v); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
+            const head = ['Bill', 'Time', 'Type', 'Table', 'Customer', 'Phone', 'Items', 'Subtotal', 'GST', 'Delivery Fee', 'Total', 'Payment', 'Payment Status', 'UTR', 'Status'];
+            const rows = list.map(o => [String(o.id).substring(1, 7), new Date(o.timestamp).toLocaleString('en-IN'), o.orderType || 'delivery', o.tableNo || '', o.customerName || o.email || '', o.phone || '', (o.items || []).map(i => i.quantity + 'x ' + i.name).join('; '), o.subtotal, o.gst || 0, o.deliveryFee || 0, o.total, o.paymentMethod || o.method || 'Cash', o.paymentStatus || 'Pending', o.utr || '', o.status || 'Placed'].map(q).join(','));
+            const blob = new Blob(['\ufeff' + [head.map(q).join(',')].concat(rows).join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'sales-' + document.getElementById('reportDate').value + '.csv'; a.click();
+        };
         window.markPaid = id => db.ref('orders/' + id).update({ paymentStatus: 'Paid' }).then(() => notifyTelegram(id));
         window.viewBill = id => printBillHTML(window.adminOrders[id], id);
         const tableQrHTML = n => `<div style="text-align:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#fff;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(location.origin + '/?table=' + n)}" style="width:100%;max-width:160px;"><div style="font-weight:800;margin-top:6px;">Table ${n}</div><div style="font-size:11px;color:#64748b;">Scan to order</div></div>`;
@@ -693,7 +753,7 @@
         sidebarOverlay.onclick = toggleSidebar;
 
         // Navigation
-        document.querySelectorAll('.nav-item:not(.logout-btn)').forEach(item => {
+        document.querySelectorAll('.nav-item[data-target]').forEach(item => {
             item.onclick = () => {
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 item.classList.add('active');
@@ -789,6 +849,7 @@
                 window.adminOrders = {}; orders.forEach(o => window.adminOrders[o.id] = o);
                 if (window._prevOrderCount !== undefined && orders.length > window._prevOrderCount) beep();
                 window._prevOrderCount = orders.length;
+                renderReport();
 
                 orders.forEach(order => {
                     const amt = parseFloat(order.total || 0);
@@ -883,6 +944,7 @@
                             <div class="item-body">
                                 <h4>${dish.name}</h4>
                                 <span class="item-price">Rs. ${parseFloat(dish.price || 0).toFixed(2)}</span>
+                                <br><button class="mini-act" style="margin-top:8px;" onclick="toggleStock('${child.key}', ${dish.available !== false})">${dish.available === false ? '❌ Sold out (tap to enable)' : '✅ Available (tap: sold out)'}</button>
                             </div>
                         </div>`;
                 });
