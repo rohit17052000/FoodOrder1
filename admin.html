@@ -260,6 +260,10 @@
         }
         .status-Placed { background: #fef3c7; color: #b45309; }
         .status-Preparing { background: #ede9fe; color: #6d28d9; }
+        .status-Ready { background: #cffafe; color: #0e7490; }
+        .pay-chip { display:inline-block; padding:3px 8px; border-radius:8px; font-size:0.75em; font-weight:800; }
+        .pay-Paid { background:#dcfce7; color:#15803d; } .pay-Pending { background:#fef3c7; color:#b45309; }
+        .mini-act { border:none; padding:6px 10px; border-radius:8px; font-weight:700; font-size:0.78em; cursor:pointer; background:#eef2ff; color:#4f46e5; margin-top:4px; }
         .status-Out { background: #e0f2fe; color: #0369a1; }
         .status-Delivered { background: #dcfce7; color: #15803d; }
 
@@ -394,6 +398,7 @@
         <ul class="nav-links">
             <li class="nav-item active" data-target="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</li>
             <li class="nav-item" data-target="orders"><i class="fas fa-receipt"></i> Orders & Delivery</li>
+            <li class="nav-item" data-target="tableqr"><i class="fas fa-qrcode"></i> Table QR Codes</li>
             <li class="nav-item" data-target="menu"><i class="fas fa-burger"></i> Menu Catalog</li>
             <li class="nav-item" data-target="restaurants"><i class="fas fa-store"></i> Kitchens</li>
             <li class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-arrow-right-from-bracket"></i> Sign Out</li>
@@ -483,13 +488,33 @@
                                 <th>Source / Customer</th>
                                 <th>Items</th>
                                 <th>Total</th>
-                                <th>Delivery Address</th>
+                                <th>Type / Address</th>
+                                <th>Payment</th>
                                 <th>Status Action</th>
+                                <th>Bill</th>
                             </tr>
                         </thead>
                         <tbody id="ordersTableBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- TABLE QR SECTION -->
+        <div id="tableqr" class="section">
+            <div class="top-bar">
+                <div>
+                    <h1>Table QR Codes</h1>
+                    <p style="margin:4px 0 0 0; color:var(--text-muted); font-size:0.95em;">Customer scans the QR at the table: website opens as Dine-in with the table number filled.</p>
+                </div>
+            </div>
+            <div class="table-card" style="padding:20px;">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;">
+                    <input type="number" id="tableCount" value="10" min="1" max="100" style="width:110px; padding:12px; border:1.5px solid #e2e8f0; border-radius:12px;">
+                    <button class="btn-add" id="genQrBtn"><i class="fas fa-qrcode"></i> Generate</button>
+                    <button class="btn-add" id="printQrBtn" style="background:#0f172a;"><i class="fas fa-print"></i> Print</button>
+                </div>
+                <div id="qrGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px;"></div>
             </div>
         </div>
 
@@ -565,6 +590,77 @@
 
         let revenueChartInstance = null;
         let statusChartInstance = null;
+        // ===== RESTAURANT DETAILS (EDIT THESE; keep same in index.html, admin.html, telegram.js) =====
+        const RESTO = { name: 'JavaGoat', address: 'Shop address, Nashik, Maharashtra', phone: '+91 98XXXXXXXX', gstin: '', upiId: 'yourupi@bank', gstPercent: 5, deliveryFee: 50 };
+        const fmt = n => Number(n || 0).toFixed(2);
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function billHTML(o, id) {
+            const items = o.items || [];
+            const sub = parseFloat(o.subtotal || 0), disc = parseFloat(o.discount || 0), total = parseFloat(o.total || 0), gst = parseFloat(o.gst || 0);
+            const fee = o.deliveryFee !== undefined ? parseFloat(o.deliveryFee) : Math.max(0, total - sub + disc - gst);
+            const type = o.orderType || 'delivery';
+            const typeLabel = type === 'dine-in' ? 'Dine-in | Table ' + esc(o.tableNo) : type === 'parcel' ? 'Parcel / Takeaway' : 'Home Delivery';
+            const pm = o.paymentMethod || o.method || 'Cash';
+            const ps = o.paymentStatus || 'Pending';
+            const gp = o.gstPercent !== undefined ? o.gstPercent : RESTO.gstPercent;
+            const bold = 'font-weight:800;font-size:16px;border-top:1px dashed #888;padding-top:8px;';
+            const tr = (l, v, b) => `<tr><td style="padding:3px 0;${b ? bold : ''}">${l}</td><td style="text-align:right;padding:3px 0;${b ? bold : ''}">${v}</td></tr>`;
+            const rows = items.map(i => `<tr><td style="padding:3px 0;">${esc(i.name)}</td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">${fmt(i.price)}</td><td style="text-align:right;">${fmt(i.price * i.quantity)}</td></tr>`).join('');
+            return `<div id="billPrint" style="max-width:380px;margin:0 auto;background:#fff;color:#111;padding:22px;font-family:'Courier New',monospace;font-size:13px;border:1px solid #e2e8f0;border-radius:12px;">
+                <div style="text-align:center;border-bottom:1px dashed #888;padding-bottom:10px;margin-bottom:10px;">
+                    <div style="font-size:20px;font-weight:800;">${esc(RESTO.name)}</div>
+                    <div>${esc(RESTO.address)}</div><div>Ph: ${esc(RESTO.phone)}</div>
+                    ${RESTO.gstin ? `<div>GSTIN: ${esc(RESTO.gstin)}</div>` : ''}
+                </div>
+                <div>Bill No: <b>#${esc(String(id).substring(1, 7))}</b></div>
+                <div>Date: ${new Date(o.timestamp).toLocaleString('en-IN')}</div>
+                <div>Type: <b>${typeLabel}</b></div>
+                <div>Customer: ${esc(o.customerName || o.email || 'Guest')}${o.phone && type !== 'delivery' ? ' (' + esc(o.phone) + ')' : ''}</div>
+                ${type === 'delivery' ? `<div>Phone: ${esc(o.phone)}</div><div>Address: ${esc(o.address)}</div>` : ''}
+                <table style="width:100%;border-collapse:collapse;margin-top:10px;border-top:1px dashed #888;">
+                    <tr style="border-bottom:1px dashed #888;"><th style="text-align:left;padding:5px 0;">Item</th><th>Qty</th><th style="text-align:right;">Rate</th><th style="text-align:right;">Amt</th></tr>${rows}
+                </table>
+                <table style="width:100%;border-collapse:collapse;margin-top:8px;border-top:1px dashed #888;">
+                    ${tr('Subtotal', 'Rs. ' + fmt(sub))}
+                    ${disc > 0 ? tr('Discount (' + esc(o.couponUsed) + ')', '-Rs. ' + fmt(disc)) : ''}
+                    ${gst > 0 ? tr('GST (' + gp + '%)', 'Rs. ' + fmt(gst)) : ''}
+                    ${fee > 0 ? tr('Delivery Fee', 'Rs. ' + fmt(fee)) : ''}
+                    ${tr('GRAND TOTAL', 'Rs. ' + fmt(total), true)}
+                </table>
+                <div style="margin-top:10px;border-top:1px dashed #888;padding-top:8px;">Payment: <b>${esc(pm)}</b> - <b style="color:${ps === 'Paid' ? '#15803d' : '#b45309'};">${esc(ps)}</b>${o.utr ? `<br>UTR: ${esc(o.utr)}` : ''}</div>
+                <div style="text-align:center;margin-top:12px;font-weight:700;">Thank you! Visit again.</div>
+            </div>`;
+        }
+        function printBillHTML(o, id) {
+            const w = window.open('', '_blank');
+            if (!w) return alert('Please allow popups to print the bill');
+            w.document.write('<html><head><title>Bill</title></head><body style="margin:0;padding:10px;background:#fff;">' + billHTML(o, id) + '</body></html>');
+            w.document.close(); w.focus(); setTimeout(() => w.print(), 400);
+        }
+
+        window.adminOrders = {};
+        const beep = () => { try { const c = new (window.AudioContext || window.webkitAudioContext)(); const o = c.createOscillator(); o.connect(c.destination); o.frequency.value = 880; o.start(); setTimeout(() => { o.stop(); c.close(); }, 450); } catch (e) {} };
+        const notifyTelegram = id => {
+            const o = window.adminOrders[id];
+            if (o && String(o.userId || '').startsWith('tg_')) {
+                fetch('/telegram', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'notify', orderId: id }) }).catch(() => {});
+            }
+        };
+        window.markPaid = id => db.ref('orders/' + id).update({ paymentStatus: 'Paid' }).then(() => notifyTelegram(id));
+        window.viewBill = id => printBillHTML(window.adminOrders[id], id);
+        const tableQrHTML = n => `<div style="text-align:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#fff;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(location.origin + '/?table=' + n)}" style="width:100%;max-width:160px;"><div style="font-weight:800;margin-top:6px;">Table ${n}</div><div style="font-size:11px;color:#64748b;">Scan to order</div></div>`;
+        document.getElementById('genQrBtn').onclick = () => {
+            const n = Math.min(100, Math.max(1, parseInt(document.getElementById('tableCount').value) || 1));
+            document.getElementById('qrGrid').innerHTML = Array.from({ length: n }, (_, i) => tableQrHTML(i + 1)).join('');
+        };
+        document.getElementById('printQrBtn').onclick = () => {
+            const g = document.getElementById('qrGrid').innerHTML;
+            if (!g) return alert('Click Generate first');
+            const w = window.open('', '_blank'); if (!w) return alert('Allow popups');
+            w.document.write('<html><body style="font-family:sans-serif;margin:10px;"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">' + g + '</div></body></html>');
+            w.document.close(); setTimeout(() => w.print(), 600);
+        };
 
         // --- Auth & Startup ---
         auth.onAuthStateChanged(user => {
@@ -690,6 +786,9 @@
                     orders.push({ id: child.key, ...child.val() });
                 });
                 orders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                window.adminOrders = {}; orders.forEach(o => window.adminOrders[o.id] = o);
+                if (window._prevOrderCount !== undefined && orders.length > window._prevOrderCount) beep();
+                window._prevOrderCount = orders.length;
 
                 orders.forEach(order => {
                     const amt = parseFloat(order.total || 0);
@@ -697,7 +796,8 @@
                     totalOrders++;
 
                     const st = order.status || 'Placed';
-                    if (statusCounts[st] !== undefined) statusCounts[st]++;
+                    const sk = st === 'Ready' ? 'Preparing' : st;
+                    if (statusCounts[sk] !== undefined) statusCounts[sk]++;
                     if (st !== 'Delivered') pendingCount++;
 
                     // Map to Day of Week
@@ -710,22 +810,33 @@
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td style="font-family:monospace; font-weight:700; color:#4f46e5;">#${order.id.substring(1, 8)}</td>
+                        <td style="font-family:monospace; font-weight:700; color:#4f46e5;">#${order.id.substring(1, 7)}</td>
                         <td>
-                            <strong>${order.userEmail || order.email || 'Customer'}</strong><br>
-                            <span style="font-size:0.85em; color:#64748b;"><i class="fas fa-phone" style="font-size:0.8em;"></i> ${order.phone || '-'}</span>
+                            <strong>${esc(order.customerName || order.userEmail || order.email || 'Customer')}</strong><br>
+                            <span style="font-size:0.85em; color:#64748b;"><i class="fas fa-phone" style="font-size:0.8em;"></i> ${esc(order.phone || '-')}</span>
                         </td>
                         <td style="font-size:0.9em;">${itemsString}</td>
                         <td style="font-weight:800; color:#0f172a;">Rs. ${amt.toFixed(2)}</td>
-                        <td style="font-size:0.85em; color:#475569; max-width:180px;">${order.address || 'Pickup'}</td>
+                        <td style="font-size:0.85em; color:#475569; max-width:180px;">
+                            <b>${order.orderType === 'dine-in' ? '🍽️ Dine-in | Table ' + esc(order.tableNo) : order.orderType === 'parcel' ? '🛍️ Parcel' : '🛵 Delivery'}</b>
+                            ${order.orderType === 'delivery' || !order.orderType ? '<br>' + esc(order.address || '-') : ''}
+                        </td>
+                        <td style="font-size:0.85em;">
+                            ${esc(order.paymentMethod || order.method || 'Cash')}<br>
+                            <span class="pay-chip pay-${(order.paymentStatus || 'Pending') === 'Paid' ? 'Paid' : 'Pending'}">${esc(order.paymentStatus || 'Pending')}</span>
+                            ${order.utr ? `<br><span style="font-size:0.8em;color:#64748b;">UTR: ${esc(order.utr)}</span>` : ''}
+                            ${(order.paymentStatus || 'Pending') !== 'Paid' ? `<br><button class="mini-act" onclick="markPaid('${order.id}')">Mark Paid</button>` : ''}
+                        </td>
                         <td>
                             <select class="status-badge ${badgeClass}" onchange="updateStatus('${order.id}', this.value)">
                                 <option value="Placed" ${st === 'Placed' ? 'selected' : ''}>Placed</option>
                                 <option value="Preparing" ${st === 'Preparing' ? 'selected' : ''}>Preparing</option>
+                                <option value="Ready" ${st === 'Ready' ? 'selected' : ''}>Ready</option>
                                 <option value="Out for Delivery" ${st === 'Out for Delivery' ? 'selected' : ''}>On Way</option>
-                                <option value="Delivered" ${st === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Delivered" ${st === 'Delivered' ? 'selected' : ''}>Delivered / Served</option>
                             </select>
                         </td>
+                        <td><button class="mini-act" onclick="viewBill('${order.id}')"><i class="fas fa-print"></i> Bill</button></td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -753,7 +864,7 @@
         }
 
         window.updateStatus = (orderId, newStatus) => {
-            db.ref('orders/' + orderId).update({ status: newStatus });
+            db.ref('orders/' + orderId).update({ status: newStatus }).then(() => notifyTelegram(orderId));
         };
 
         // --- Dishes with Card Badges ---
