@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "admin.html", "use": "@vercel/static" },
+    { "src": "send-otp.js", "use": "@vercel/node" },
+    { "src": "telegram.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/send-otp", "dest": "/send-otp.js" },
+    { "src": "/telegram", "dest": "/telegram.js" },
+    { "src": "/admin", "dest": "/admin.html" },
+    { "src": "/admin.html", "dest": "/admin.html" },
+    { "src": "/index.html", "dest": "/index.html" },
+    { "src": "/", "dest": "/index.html" }
+  ]
+}
