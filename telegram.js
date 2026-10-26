@@ -86,7 +86,7 @@ function billText(o, id) {
 async function sendMenu(chatId) {
   const dishes = await fb('dishes');
   if (!dishes) return send(chatId, 'Menu is empty right now.');
-  const list = Object.values(dishes).map(d => `• ${esc(d.name)} - Rs. ${esc(d.price)}`).join('\n');
+  const list = Object.values(dishes).map(d => d.available === false ? `❌ ${esc(d.name)} - sold out` : `• ${esc(d.name)} - Rs. ${esc(d.price)}`).join('\n');
   return send(chatId, `📋 <b>Our Menu</b>\n${list}`.slice(0, 4000));
 }
 
@@ -215,7 +215,7 @@ async function handle(chatId, input, isCb, from) {
 
     if (cmd === 'pick') {
       const dish = await fb(`dishes/${arg}`);
-      if (!dish) return send(chatId, '❌ That item is not available. Type another dish name.');
+      if (!dish || dish.available === false) return send(chatId, '❌ That item is not available right now. Type another dish name.');
       return askQty(arg, dish);
     }
     if (cmd === 'qty') return addToCart(parseInt(arg));
@@ -248,9 +248,11 @@ async function handle(chatId, input, isCb, from) {
     if (!matches.length) {
       return send(chatId, `❌ Sorry, "<b>${esc(input)}</b>" is not on our menu.\nTry another name or type /menu.`);
     }
-    if (matches.length === 1) return askQty(matches[0], dishes[matches[0]]);
-    return send(chatId, `🔎 Found ${matches.length} items. Tap one:`,
-      matches.slice(0, 8).map(k => [{ text: `${dishes[k].name} - Rs. ${dishes[k].price}`, callback_data: 'pick:' + k }]));
+    const avail = matches.filter(k => dishes[k].available !== false);
+    if (!avail.length) return send(chatId, `😔 "<b>${esc(input)}</b>" is sold out right now. Please try another item.`);
+    if (avail.length === 1) return askQty(avail[0], dishes[avail[0]]);
+    return send(chatId, `🔎 Found ${avail.length} items. Tap one:`,
+      avail.slice(0, 8).map(k => [{ text: `${dishes[k].name} - Rs. ${dishes[k].price}`, callback_data: 'pick:' + k }]));
   }
 
   if (s.step === 'awaiting_qty') return addToCart(parseInt(input));
