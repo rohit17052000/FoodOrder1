@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaGoat - Kitchen Display</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f1f5f9; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #1e293b; position: sticky; top: 0; z-index: 5; }
+  header h1 { margin: 0; font-size: 1.3em; }
+  .count { font-weight: 700; color: #fbbf24; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; padding: 16px; }
+  .card { background: #1e293b; border-radius: 16px; padding: 16px; border-top: 6px solid #f59e0b; }
+  .card.Preparing { border-top-color: #8b5cf6; }
+  .card.Ready { border-top-color: #10b981; }
+  .card.Out { border-top-color: #0ea5e9; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .big { font-size: 1.5em; font-weight: 800; }
+  .tag { font-size: 0.8em; font-weight: 700; background: #334155; padding: 4px 10px; border-radius: 8px; }
+  .late { color: #f87171; font-weight: 800; }
+  ul { list-style: none; padding: 0; margin: 10px 0; }
+  li { font-size: 1.15em; padding: 5px 0; border-bottom: 1px dashed #334155; }
+  li b { color: #fbbf24; margin-right: 6px; }
+  .meta { font-size: 0.85em; color: #94a3b8; }
+  .pay { font-size: 0.8em; font-weight: 700; margin-top: 6px; }
+  button { width: 100%; margin-top: 12px; padding: 14px; font-size: 1.05em; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; background: #f59e0b; color: #0f172a; }
+  button.next-Preparing { background: #8b5cf6; color: white; }
+  button.next-Ready { background: #10b981; color: white; }
+  button.next-Out { background: #0ea5e9; color: white; }
+  button.next-Delivered { background: #e2e8f0; color: #0f172a; }
+  #empty { text-align: center; color: #64748b; padding: 80px 20px; font-size: 1.3em; display: none; }
+  #auth { position: fixed; inset: 0; background: #0f172a; display: none; align-items: center; justify-content: center; z-index: 50; }
+  #auth div { background: #1e293b; padding: 28px; border-radius: 16px; width: 90%; max-width: 360px; }
+  #auth input { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: none; font-size: 16px; }
+</style>
+</head>
+<body>
+<div id="auth"><div>
+  <h2 style="margin-top:0;">Kitchen Login</h2>
+  <p id="err" style="color:#f87171;"></p>
+  <input type="email" id="em" placeholder="admin email">
+  <input type="password" id="pw" placeholder="password">
+  <button id="loginBtn">Log in</button>
+</div></div>
+
+<header>
+  <h1>🔥 Kitchen Display</h1>
+  <div><span class="count" id="cnt">0 active</span> &nbsp; <a href="/admin" style="color:#94a3b8;">Admin</a></div>
+</header>
+<div id="grid"></div>
+<div id="empty">No active orders 🎉</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA_2RcZMqfQQgyXPY3WJ__VOFSPloyuKRQ",
+  authDomain: "foodorder1-65003.firebaseapp.com",
+  databaseURL: "https://foodorder1-65003-default-rtdb.firebaseio.com",
+  projectId: "foodorder1-65003",
+  storageBucket: "foodorder1-65003.firebasestorage.app",
+  messagingSenderId: "731958687047",
+  appId: "1:731958687047:web:85a9cc5f078defbd9f4862"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth(), db = firebase.database();
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let orders = {}, prevCount, started = false;
+
+const beep = () => { try { const c = new (window.AudioContext || window.webkitAudioContext)(); const o = c.createOscillator(); o.connect(c.destination); o.frequency.value = 880; o.start(); setTimeout(() => { o.stop(); c.close(); }, 500); } catch (e) {} };
+
+// next step for each order type
+function nextOf(o) {
+  const st = o.status || 'Placed';
+  const t = o.orderType || 'delivery';
+  if (st === 'Placed') return { to: 'Preparing', label: '👨‍🍳 Start Preparing', cls: 'Preparing' };
+  if (st === 'Preparing') return { to: 'Ready', label: '✅ Mark Ready', cls: 'Ready' };
+  if (st === 'Ready') return t === 'delivery'
+    ? { to: 'Out for Delivery', label: '🛵 Out for Delivery', cls: 'Out' }
+    : { to: 'Delivered', label: t === 'dine-in' ? '🍽️ Served' : '🛍️ Handed Over', cls: 'Delivered' };
+  if (st === 'Out for Delivery') return { to: 'Delivered', label: '🎉 Delivered', cls: 'Delivered' };
+  return null;
+}
+
+window.advance = id => {
+  const n = nextOf(orders[id]); if (!n) return;
+  db.ref('orders/' + id).update({ status: n.to }).then(() => {
+    if (String(orders[id].userId || '').startsWith('tg_'))
+      fetch('/telegram', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'notify', orderId: id }) }).catch(() => {});
+  });
+};
+
+function mins(ts) { return Math.max(0, Math.floor((Date.now() - new Date(ts)) / 60000)); }
+
+function render() {
+  const list = Object.keys(orders).map(id => ({ id, ...orders[id] }))
+    .filter(o => (o.status || 'Placed') !== 'Delivered' && o.status !== 'Cancelled')
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  document.getElementById('cnt').textContent = list.length + ' active';
+  document.getElementById('empty').style.display = list.length ? 'none' : 'block';
+  document.getElementById('grid').innerHTML = list.map(o => {
+    const st = o.status || 'Placed', t = o.orderType || 'delivery', m = mins(o.timestamp), n = nextOf(o);
+    const where = t === 'dine-in' ? '🍽️ Table ' + esc(o.tableNo) : t === 'parcel' ? '🛍️ Parcel' : '🛵 Delivery';
+    const cls = st === 'Out for Delivery' ? 'Out' : st;
+    return `<div class="card ${cls}">
+      <div class="top"><div><div class="big">${where}</div><div class="meta">#${esc(o.id.substring(1, 7))} · ${esc(o.customerName || '')}</div></div>
+        <div style="text-align:right;"><span class="tag">${esc(st)}</span><div class="${m >= 20 ? 'late' : 'meta'}" style="margin-top:6px;">${m} min ago</div></div></div>
+      <ul>${(o.items || []).map(i => `<li><b>${i.quantity}x</b>${esc(i.name)}${i.note ? `<div class="meta">📝 ${esc(i.note)}</div>` : ''}</li>`).join('')}</ul>
+      ${o.note ? `<div class="meta">📝 ${esc(o.note)}</div>` : ''}
+      <div class="pay">💳 ${esc(o.paymentMethod || o.method || 'Cash')} - ${esc(o.paymentStatus || 'Pending')}</div>
+      ${n ? `<button class="next-${n.cls}" onclick="advance('${o.id}')">${n.label}</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+auth.onAuthStateChanged(u => {
+  document.getElementById('auth').style.display = u ? 'none' : 'flex';
+  if (u && !started) {
+    started = true;
+    db.ref('orders').on('value', s => {
+      orders = s.val() || {};
+      const c = Object.keys(orders).length;
+      if (prevCount !== undefined && c > prevCount) beep();
+      prevCount = c;
+      render();
+    });
+    setInterval(render, 30000);
+  }
+});
+document.getElementById('loginBtn').onclick = () =>
+  auth.signInWithEmailAndPassword(document.getElementById('em').value, document.getElementById('pw').value)
+    .catch(e => document.getElementById('err').textContent = e.message);
+</script>
+</body>
+</html>
