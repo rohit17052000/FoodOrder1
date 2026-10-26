@@ -1,4 +1,4 @@
-const FIREBASE_DB_URL = "https://foodorder1-2c211-default-rtdb.firebaseio.com";
+const FIREBASE_DB_URL = "https://foodorder1-65003-default-rtdb.firebaseio.com";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 async function sendTelegram(chatId, text, photoUrl = null) {
