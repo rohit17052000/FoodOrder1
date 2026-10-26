@@ -7,7 +7,7 @@
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -15,11 +15,11 @@
 
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            --hero-gradient: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            --primary: #12392b;
+            --primary-gradient: linear-gradient(135deg, #12392b 0%, #0c281e 100%);
+            --hero-gradient: linear-gradient(135deg, #12392b 0%, #0f172a 100%);
             --surface: #ffffff;
-            --bg-body: #f8fafc;
+            --bg-body: #f5f7f2;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border: #f1f5f9;
@@ -35,7 +35,7 @@
         * { box-sizing: border-box; }
         html, body {
             height: 100%; margin: 0; padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background-color: var(--bg-body); color: var(--text-main);
             -webkit-tap-highlight-color: transparent;
         }
@@ -77,16 +77,16 @@
                 flex-direction: column; justify-content: center; align-items: center; text-align: center;
                 padding: 40px; box-sizing: border-box;
             }
-            .auth-card-left h2 { font-size: 2.2em; font-family: 'Outfit'; margin: 0 0 10px 0; }
+            .auth-card-left h2 { font-size: 2.2em; font-family: 'Bricolage Grotesque', sans-serif; margin: 0 0 10px 0; }
             .auth-card-left p { opacity: 0.9; margin: 0; }
             .auth-card-right { width: 55%; padding: 48px; }
         }
 
         .auth-header { text-align: center; margin-bottom: 25px; }
         .logo-badge {
-            width: 65px; height: 65px; border-radius: 20px; background: #eff6ff; color: var(--primary);
+            width: 65px; height: 65px; border-radius: 20px; background: #e8f1e4; color: var(--primary);
             display: flex; align-items: center; justify-content: center; font-size: 1.8em; margin: 0 auto 14px auto;
-            box-shadow: 0 8px 16px rgba(37,99,235,0.12);
+            box-shadow: 0 8px 16px rgba(18,57,43,0.12);
         }
         .input-group { position: relative; margin-bottom: 16px; }
         .input-group i { position: absolute; top: 41px; left: 16px; transform: translateY(-50%); color: #94a3b8; }
@@ -99,10 +99,10 @@
         .btn-main {
             width: 100%; padding: 15px; background: var(--primary-gradient); color: white; border: none;
             border-radius: 12px; font-weight: 700; font-size: 1.05em; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(37,99,235,0.25); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 8px 20px rgba(18,57,43,0.25); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: all 0.2s; touch-action: manipulation;
         }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(37,99,235,0.35); }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(18,57,43,0.35); }
         .btn-main:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; transform: none; }
         .btn-google { background: white; color: #1e293b; border: 1.5px solid #e2e8f0; box-shadow: none; margin-top: 10px; }
 
@@ -121,11 +121,11 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
         .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
-        .brand-title { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.35em; font-family: 'Outfit'; color: var(--primary); }
+        .brand-title { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.35em; font-family: 'Bricolage Grotesque', sans-serif; color: var(--primary); }
         .search-container { position: relative; max-width: 1200px; margin: 12px auto 0 auto; }
         .search-container input {
             width: 100%; padding: 13px 18px 13px 44px; border: 1.5px solid #e2e8f0; border-radius: 30px;
-            font-size: 15px; outline: none; background: #f8fafc;
+            font-size: 15px; outline: none; background: #f5f7f2;
         }
         .search-container i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
 
@@ -146,7 +146,7 @@
             padding: 30px 24px; color: white; position: relative; overflow: hidden;
             box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
         }
-        .hero-banner h2 { font-family: 'Outfit'; font-size: 1.8em; margin: 0 0 8px 0; font-weight: 800; }
+        .hero-banner h2 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.8em; margin: 0 0 8px 0; font-weight: 800; }
         .hero-banner p { margin: 0 0 16px 0; opacity: 0.85; font-size: 0.95em; max-width: 320px; }
         .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; }
         .pill-tag {
@@ -171,7 +171,7 @@
 
         /* --- FOOD CARDS --- */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 14px 0; }
-        .section-header h3 { margin: 0; font-size: 1.25em; font-weight: 800; font-family: 'Outfit'; }
+        .section-header h3 { margin: 0; font-size: 1.25em; font-weight: 800; font-family: 'Bricolage Grotesque', sans-serif; }
         
         .food-scroll { display: flex; gap: 18px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 12px; }
         .food-card {
@@ -190,7 +190,7 @@
             position: absolute; bottom: 12px; right: 12px;
             width: 36px; height: 36px; border-radius: 50%; background: var(--primary);
             color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(37,99,235,0.3); z-index: 10; touch-action: manipulation;
+            box-shadow: 0 4px 10px rgba(18,57,43,0.3); z-index: 10; touch-action: manipulation;
         }
 
         /* --- FLOATING CART & BOTTOM NAV --- */
@@ -198,7 +198,7 @@
         .fab-cart {
             width: 62px; height: 62px; border-radius: 50%; background: var(--primary-gradient);
             color: white; font-size: 1.4em; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 25px rgba(37,99,235,0.4); cursor: pointer; position: relative;
+            box-shadow: 0 10px 25px rgba(18,57,43,0.4); cursor: pointer; position: relative;
         }
         .cart-pill {
             position: absolute; top: 0; right: 0; background: var(--danger);
@@ -222,13 +222,13 @@
 
         /* Inner Pages */
         .page-header { padding: 30px 20px 16px; text-align: center; position: relative; background: var(--bg-body); flex-shrink: 0; }
-        .page-header h2 { margin: 0; font-family: 'Outfit'; font-size: 1.4em; }
+        .page-header h2 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.4em; }
         .back-btn { position: absolute; left: 20px; top: 32px; font-size: 1.3em; cursor: pointer; touch-action: manipulation; }
         .scrollable-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; }
         .inner-wrap { max-width: 650px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .cart-row { display: flex; align-items: center; background: white; padding: 14px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
         .cart-row img { width: 68px; height: 68px; border-radius: 12px; object-fit: cover; margin-right: 14px; }
-        .qty-box { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 5px 12px; border-radius: 20px; }
+        .qty-box { display: flex; align-items: center; gap: 8px; background: #f5f7f2; padding: 5px 12px; border-radius: 20px; }
         .qty-box button { background: white; border: none; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-weight: 700; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.06); }
         .form-control { width: 100%; padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 15px; margin-top: 6px; box-sizing: border-box; }
         
@@ -241,8 +241,63 @@
         .opt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .opt-btn { padding: 12px 8px; border: 1.5px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: 700; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; background: white; touch-action: manipulation; }
         .opt-btn i { font-size: 1.3em; color: var(--primary); }
-        .opt-btn.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
-        .mini-btn { background: #eff6ff; color: var(--primary); border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8em; cursor: pointer; }
+        .opt-btn.active { border-color: var(--primary); background: #e8f1e4; color: var(--primary); }
+        .mini-btn { background: #e8f1e4; color: var(--primary); border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8em; cursor: pointer; }
+    
+        /* ===== JavaGoat UI refresh ===== */
+        :root { --accent: #ffb81c; --chili: #e4452f; --text-muted: #5c6b63; --border: #e4eadf; --radius-xl: 22px; --radius-lg: 14px;
+                --shadow-card: 0 1px 2px rgba(16,40,31,.06), 0 6px 16px -8px rgba(16,40,31,.16); }
+        :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+        h1, h2, h3, .brand-title { font-family: 'Bricolage Grotesque', sans-serif; letter-spacing: -0.01em; }
+        .promo-strip { background: var(--accent); color: #12392b; font-weight: 700; font-size: 0.85em; padding: 8px 16px; text-align: center; flex-shrink: 0; }
+        .brand-title i { background: var(--accent); color: #12392b; width: 36px; height: 36px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8em; }
+        .mode-card { margin-top: 18px; background: var(--primary); color: #fff; border-radius: var(--radius-xl); padding: 22px; }
+        .mode-card h2 { font-size: 1.8em; margin: 0 0 4px; line-height: 1.15; font-weight: 800; }
+        .mode-card p { margin: 0 0 16px; opacity: 0.85; max-width: 420px; }
+        .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: rgba(255,255,255,.1); padding: 5px; border-radius: 14px; max-width: 460px; }
+        .seg-btn { border: none; background: transparent; color: #fff; padding: 10px 6px; border-radius: 10px; font: inherit; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; min-height: 56px; }
+        .seg-btn.active { background: var(--accent); color: #12392b; }
+        .cat-chip { min-width: 0; padding: 9px 16px; border-radius: 999px; display: flex; align-items: center; gap: 8px; box-shadow: none; }
+        .cat-chip .cat-icon { width: auto; height: auto; background: none !important; margin: 0; font-size: 1.15em; }
+        .cat-chip:hover { transform: none; box-shadow: none; }
+        .cat-chip.active, .cat-chip.active:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: none; box-shadow: none; }
+        .category-row { gap: 8px; }
+        .dish-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 768px) { .dish-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1100px) { .dish-grid { grid-template-columns: repeat(3, 1fr); } }
+        .dish-row { display: flex; gap: 14px; background: #fff; border-radius: var(--radius-lg); padding: 12px; box-shadow: var(--shadow-card); }
+        .dish-row img { width: 96px; height: 96px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .dish-main { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+        .dish-main h4 { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.25; }
+        .dish-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .add-btn { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); padding: 8px 22px; border-radius: 10px; font-weight: 800; font-size: 0.95em; cursor: pointer; min-height: 40px; }
+        .stepper { display: flex; align-items: center; background: var(--primary); color: #fff; border-radius: 10px; }
+        .stepper button { background: none; border: none; color: #fff; width: 40px; height: 40px; font-size: 1.2em; cursor: pointer; }
+        .stepper span { min-width: 22px; text-align: center; font-weight: 800; }
+        .dish-row.sold img { filter: grayscale(1); opacity: .55; }
+        .sold-tag { color: var(--chili); font-weight: 800; font-size: 0.85em; }
+        .skel { height: 120px; border-radius: 14px; background: linear-gradient(90deg, #e8eee4 25%, #f3f6f0 50%, #e8eee4 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+        main { padding-bottom: 160px; }
+        .cart-bar { position: absolute; left: 12px; right: 12px; bottom: 80px; z-index: 95; display: none; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent); color: #12392b; border: none; border-radius: 16px; padding: 14px 18px; font: inherit; font-weight: 800; font-size: 1rem; box-shadow: 0 10px 24px -6px rgba(16,40,31,.4); cursor: pointer; }
+        .cart-bar.show { display: flex; }
+        .cb-count { background: #12392b; color: #fff; border-radius: 8px; padding: 2px 10px; }
+        @media (min-width: 768px) { .cart-bar { bottom: 20px; left: auto; right: 24px; width: 340px; } }
+        .co-summary { display: flex; justify-content: space-between; align-items: center; background: var(--bg-body); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
+        .co-summary span { display: block; font-size: 0.8rem; color: var(--text-muted); }
+        .co-summary strong { font-size: 1.3rem; color: var(--primary); }
+        #placeOrderBtn { position: sticky; bottom: 8px; z-index: 5; }
+        .track { display: flex; list-style: none; margin: 10px 0 14px; padding: 0; }
+        .track li { flex: 1; text-align: center; font-size: 0.7rem; color: #8a978f; font-weight: 700; position: relative; }
+        .track li i { display: block; width: 12px; height: 12px; border-radius: 50%; background: #d5ddd1; margin: 0 auto 6px; position: relative; z-index: 1; }
+        .track li::before { content: ''; position: absolute; top: 5px; left: -50%; width: 100%; height: 2px; background: #d5ddd1; }
+        .track li:first-child::before { display: none; }
+        .track li.done i, .track li.now i, .track li.done::before, .track li.now::before { background: var(--primary); }
+        .track li.now { color: var(--primary); } .track li.now i { box-shadow: 0 0 0 4px rgba(18,57,43,.18); }
+        .track li.done { color: var(--text-main); }
+        #toast { position: fixed; left: 50%; bottom: 150px; transform: translateX(-50%) translateY(16px); background: #12392b; color: #fff; padding: 10px 18px; border-radius: 12px; font-weight: 700; opacity: 0; pointer-events: none; transition: all .2s; z-index: 300; }
+        #toast.show { opacity: 1; transform: translateX(-50%); }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
 </head>
 <body>
@@ -261,7 +316,7 @@
                     <div class="auth-card-right">
                         <div class="auth-header">
                             <div class="logo-badge"><i class="fas fa-mug-hot"></i></div>
-                            <h2 style="font-family:'Outfit'; font-size:1.6em; margin:0 0 6px 0;">Welcome Back</h2>
+                            <h2 style="font-family:'Bricolage Grotesque', sans-serif; font-size:1.6em; margin:0 0 6px 0;">Welcome Back</h2>
                             <p style="color:#64748b; margin:0; font-size:0.9em;">Sign in to continue ordering</p>
                         </div>
                         <p id="auth-error" style="color:var(--danger); font-size:0.85em; text-align:center; display:none;"></p>
@@ -299,7 +354,7 @@
                     <div class="auth-card-right">
                         <div class="auth-header">
                             <div class="logo-badge"><i class="fas fa-user-plus"></i></div>
-                            <h2 style="font-family:'Outfit'; font-size:1.6em; margin:0 0 6px 0;">Create Account</h2>
+                            <h2 style="font-family:'Bricolage Grotesque', sans-serif; font-size:1.6em; margin:0 0 6px 0;">Create Account</h2>
                         </div>
                         <div class="input-group">
                             <span class="input-label">Full Name</span>
@@ -332,9 +387,7 @@
 
         <!-- HOME -->
         <div id="appContainer" class="page">
-            <div class="offer-ticker">
-                <span>⚡ <strong>EXCLUSIVE:</strong> 20% off on first order with code: <strong>GOAT20</strong> | 🚚 Free instant dispatch across Kathmandu!</span>
-            </div>
+            <div class="promo-strip">Use code <strong>GOAT20</strong> for 20% off your order</div>
 
             <header class="app-header">
                 <div class="header-top">
@@ -354,22 +407,22 @@
 
             <main>
                 <div class="container">
-                    <!-- HERO PROMO -->
-                    <div class="hero-banner">
-                        <div class="hero-badges">
-                            <span class="pill-tag">🔥 Trending Now</span>
-                            <span class="pill-tag">⚡ 25 Min Delivery</span>
+                    <section class="mode-card" aria-label="Order type">
+                        <h2 id="modeTitle">Craving something?</h2>
+                        <p id="modeSub">Hot food at your door, delivered in about 25 minutes.</p>
+                        <div class="seg">
+                            <button class="seg-btn" data-type="dine-in" onclick="setOrderType('dine-in')"><i class="fas fa-utensils"></i><span>Dine-in</span></button>
+                            <button class="seg-btn" data-type="parcel" onclick="setOrderType('parcel')"><i class="fas fa-bag-shopping"></i><span>Parcel</span></button>
+                            <button class="seg-btn active" data-type="delivery" onclick="setOrderType('delivery')"><i class="fas fa-motorcycle"></i><span>Delivery</span></button>
                         </div>
-                        <h2>Delicious Bites,<br>Delivered Hot.</h2>
-                        <p>Order fresh meals crafted by certified top local kitchens.</p>
-                    </div>
+                    </section>
 
                     <!-- CATEGORIES -->
                     <div class="section-header">
                         <h3>Explore Categories</h3>
                     </div>
                     <div class="category-row">
-                        <div class="cat-chip" onclick="filterCategory('')">
+                        <div class="cat-chip active" onclick="filterCategory('')">
                             <div class="cat-icon" style="background:#e0f2fe;">🍽️</div>
                             <span style="font-weight:700; font-size:0.85em;">All</span>
                         </div>
@@ -399,19 +452,17 @@
 
                     <!-- RECOMMENDED DISHES -->
                     <div class="section-header" style="margin-top:20px;">
-                        <h3>Recommended For You</h3>
+                        <h3>Our menu</h3>
                     </div>
-                    <div class="food-scroll" id="dishesContainer"></div>
+                    <div class="dish-grid" id="dishesContainer" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
                 </div>
             </main>
 
-            <!-- FLOATING CART -->
-            <div id="cart-fab-container">
-                <div class="fab-cart" data-page="cartPage">
-                    <i class="fas fa-shopping-bag"></i>
-                    <div class="cart-pill" id="cart-count">0</div>
-                </div>
-            </div>
+            <button id="cartBar" class="cart-bar" data-page="cartPage" aria-label="View basket">
+                <span class="cb-count" id="cb-count">0</span>
+                <span>View basket</span>
+                <span id="cb-total">Rs. 0</span>
+            </button>
 
             <!-- MOBILE NAV -->
             <nav class="mobile-bottom-nav">
@@ -462,6 +513,7 @@
             </header>
             <div class="scrollable-body">
                 <div class="inner-wrap" style="background:white; padding:24px; border-radius:20px; box-shadow:var(--shadow-card);">
+                    <div id="coSummary" class="co-summary"></div>
                     <div style="margin-bottom:20px;">
                         <label style="font-weight:700; font-size:0.95em;">Your Name</label>
                         <input type="text" id="custName" class="form-control" placeholder="Full name">
@@ -551,7 +603,7 @@
                 <div style="width:90px; height:90px; border-radius:50%; background:#dcfce7; color:#15803d; display:flex; align-items:center; justify-content:center; font-size:2.8em; margin-bottom:20px;">
                     <i class="fas fa-check"></i>
                 </div>
-                <h2 style="font-family:'Outfit'; font-size:2em; margin:0 0 8px 0;">Order Placed!</h2>
+                <h2 style="font-family:'Bricolage Grotesque', sans-serif; font-size:2em; margin:0 0 8px 0;">Order Placed!</h2>
                 <p style="color:#64748b; margin:0 0 25px 0;">Our kitchen has started preparing your order.</p>
                 <button class="btn-main" id="viewBillBtn" style="max-width:280px; background:#0f172a;"><i class="fas fa-file-invoice"></i> View Bill</button>
                 <button class="btn-main" id="trackOrderBtn" style="max-width:280px;">Track Live Status</button>
@@ -560,6 +612,8 @@
         </div>
 
     </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -653,7 +707,8 @@
         }
         window.setOrderType = t => {
             orderType = t;
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+            document.querySelectorAll('.type-btn, .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+            updateModeText();
             updateCartUI(); applyCheckoutMode(); refreshUpi();
         };
         function applyCheckoutMode() {
@@ -691,8 +746,7 @@
                 if (nav.dataset.page === id || nav.dataset.target === id) nav.classList.add('active');
                 else if (nav.dataset.page || nav.dataset.target) nav.classList.remove('active');
             });
-            if (id === 'checkoutPage') {
-                applyCheckoutMode(); refreshUpi();
+            if (id === 'checkoutPage') { applyCheckoutMode(); refreshUpi(); renderCoSummary();
                 const cn = document.getElementById('custName');
                 if (!cn.value && currentUser) cn.value = currentUser.displayName || '';
                 setTimeout(() => { if (map) map.invalidateSize(); }, 300);
@@ -879,30 +933,64 @@
             });
         }
 
+        let shownDishes = null;
+        const refreshDishes = () => { if (shownDishes) renderDishes(shownDishes); };
+        const inCart = key => { const x = cart.find(i => i.id === key); return x ? x.quantity : 0; };
+        window.showToast = msg => {
+            const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+            clearTimeout(window._toastT); window._toastT = setTimeout(() => t.classList.remove('show'), 2200);
+        };
+        window.addDish = key => {
+            const d = allDishesData.find(x => x.key === key);
+            if (d) addToCart(d.key, d.name, Number(d.price) || 0, d.imageUrl || '');
+        };
         function renderDishes(dishes) {
-            const c = document.getElementById('dishesContainer'); c.innerHTML = '';
+            shownDishes = dishes;
+            const c = document.getElementById('dishesContainer');
             if (!dishes || dishes.length === 0) {
-                c.innerHTML = '<p style="color:#94a3b8; font-weight:600; padding:10px;">No dishes found.</p>';
+                c.innerHTML = '<p style="color:var(--text-muted); font-weight:600; padding:10px;">No dishes match your search. Try another name or pick "All".</p>';
                 return;
             }
-            dishes.forEach(d => {
-                const safeName = (d.name || "").replace(/'/g, "\\'");
-                c.innerHTML += `
-                    <div class="food-card">
-                        <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}">
-                        <button class="btn-plus" onclick="addToCart('${d.key}','${safeName}',${d.price || 0},'${d.imageUrl || ''}')"><i class="fas fa-plus"></i></button>
-                        <div class="food-info">
-                            <h4>${d.name}</h4>
-                            <p class="food-price">Rs. ${d.price || 0}</p>
-                        </div>
-                    </div>`;
-            });
+            c.innerHTML = dishes.map(d => {
+                const q = inCart(d.key), sold = d.available === false;
+                const action = sold ? '<span class="sold-tag">Sold out</span>'
+                    : q ? `<div class="stepper"><button aria-label="Remove one ${esc(d.name)}" onclick="modQty('${d.key}',-1)">&minus;</button><span>${q}</span><button aria-label="Add one ${esc(d.name)}" onclick="addDish('${d.key}')">+</button></div>`
+                    : `<button class="add-btn" aria-label="Add ${esc(d.name)}" onclick="addDish('${d.key}')">Add</button>`;
+                return `<article class="dish-row ${sold ? 'sold' : ''}">
+                    <img src="${esc(d.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c')}" alt="${esc(d.name)}" loading="lazy">
+                    <div class="dish-main">
+                        <h4>${esc(d.name)}</h4>
+                        <div class="dish-foot"><span class="food-price">Rs. ${esc(d.price || 0)}</span>${action}</div>
+                    </div>
+                </article>`;
+            }).join('');
         }
 
         window.filterCategory = cat => {
+            document.querySelectorAll('.cat-chip').forEach(ch => ch.classList.toggle('active', ch.getAttribute('onclick') === `filterCategory('${cat || ''}')`));
             if (!cat) renderDishes(allDishesData);
             else renderDishes(allDishesData.filter(d => (d.name || '').toLowerCase().includes(cat.toLowerCase())));
         };
+
+        function trackerHTML(o) {
+            const steps = (o.orderType === 'delivery' || !o.orderType)
+                ? [['Placed', 'Placed'], ['Preparing', 'Preparing'], ['Ready', 'Ready'], ['Out for Delivery', 'On the way'], ['Delivered', 'Delivered']]
+                : [['Placed', 'Placed'], ['Preparing', 'Preparing'], ['Ready', 'Ready'], ['Delivered', o.orderType === 'dine-in' ? 'Served' : 'Picked up']];
+            const idx = Math.max(0, steps.findIndex(x => x[0] === (o.status || 'Placed')));
+            return `<ol class="track" aria-label="Order progress">${steps.map((x, i) => `<li class="${i < idx ? 'done' : i === idx ? 'now' : ''}"><i></i><span>${x[1]}</span></li>`).join('')}</ol>`;
+        }
+        function renderCoSummary() {
+            const el = document.getElementById('coSummary'); if (!el) return;
+            const n = cart.reduce((a, b) => a + b.quantity, 0);
+            const lbl = { 'dine-in': 'Dine-in', 'parcel': 'Parcel', 'delivery': 'Delivery' }[orderType];
+            el.innerHTML = `<div><b>${n} item${n === 1 ? '' : 's'}</b><span>${lbl}</span></div><strong>Rs. ${fmt(calcTotals(cartSub()).total)}</strong>`;
+        }
+        function updateModeText() {
+            const m = { 'dine-in': urlTable ? `Table ${urlTable}. We will bring it over.` : 'We will bring your order to the table.', 'parcel': 'Order now and collect it at the counter.', 'delivery': 'Hot food at your door, delivered in about 25 minutes.' };
+            const t = { 'dine-in': 'Eating in today?', 'parcel': 'Taking it with you?', 'delivery': 'Craving something?' };
+            document.getElementById('modeSub').textContent = m[orderType];
+            document.getElementById('modeTitle').textContent = t[orderType];
+        }
 
         document.querySelector('.search-container input').addEventListener('input', e => {
             const query = e.target.value.toLowerCase();
@@ -911,13 +999,18 @@
 
         // Cart Actions
         window.addToCart = (id, name, price, img) => {
+            const dd = allDishesData.find(x => x.key === id); if (dd && dd.available === false) return showToast('Sorry, this item is sold out');
             const ex = cart.find(i => i.id === id);
             ex ? ex.quantity++ : cart.push({ id, name, price, img, quantity: 1 });
             updateCartUI();
         };
 
         function updateCartUI() {
-            document.getElementById('cart-count').textContent = cart.reduce((a, b) => a + b.quantity, 0);
+            const nItems = cart.reduce((a, b) => a + b.quantity, 0);
+            document.getElementById('cb-count').textContent = nItems;
+            document.getElementById('cb-total').textContent = 'Rs. ' + fmt(cartSub());
+            document.getElementById('cartBar').classList.toggle('show', nItems > 0);
+            refreshDishes(); renderCoSummary();
             const c = document.getElementById('cartItemsContainer');
             if (cart.length === 0) {
                 c.innerHTML = '<p style="text-align:center; padding:30px; color:#94a3b8; font-weight:600;">Your basket is empty.</p>';
@@ -1055,8 +1148,9 @@
                         <div style="background:white; padding:20px; border-radius:18px; margin-bottom:14px; box-shadow:var(--shadow-card);">
                             <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.05em; margin-bottom:8px;">
                                 <span style="color:var(--primary);">#${o.k.substring(1,7)}</span>
-                                <span style="background:#eff6ff; color:var(--primary); padding:4px 10px; border-radius:8px; font-size:0.85em;">${o.status}</span>
+                                <span style="background:#e8f1e4; color:var(--primary); padding:4px 10px; border-radius:8px; font-size:0.85em;">${o.status}</span>
                             </div>
+                            ${trackerHTML(o)}
                             <p style="color:#64748b; font-size:0.9em; margin:0 0 10px 0;">${o.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</p>
                             <div style="font-size:0.8em; color:#64748b; margin-bottom:8px;">${o.orderType === 'dine-in' ? '🍽️ Dine-in, Table ' + esc(o.tableNo) : o.orderType === 'parcel' ? '🛍️ Parcel' : '🛵 Delivery'} &middot; ${esc(o.paymentMethod || 'Cash')} (${esc(o.paymentStatus || 'Pending')})</div>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1070,6 +1164,14 @@
     
         document.getElementById('tableNo').addEventListener('input', checkOrderValidity);
         if (urlTable) { document.getElementById('tableNo').value = urlTable; setOrderType('dine-in'); }
+    
+        // Keyboard access for tappable divs/icons
+        document.querySelectorAll('.back-btn, .nav-item, .cat-chip, .opt-btn, .logoutBtnClass').forEach(el => {
+            el.setAttribute('role', 'button'); el.tabIndex = 0;
+            if (el.classList.contains('back-btn')) el.setAttribute('aria-label', 'Go back');
+            el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+        });
+        updateModeText();
     </script>
 </body>
 </html>
