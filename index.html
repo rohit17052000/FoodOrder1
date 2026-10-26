@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         :root {
@@ -236,6 +237,12 @@
         .verified-badge { color: var(--success); font-weight: 600; display: none; align-items: center; gap: 6px; margin-top: 8px; background: rgba(0, 184, 148, 0.1); padding: 8px 12px; border-radius: 8px; width: fit-content; font-size: 0.85em; }
         .or-divider { display: flex; align-items: center; text-align: center; color: #b2bec3; margin: 20px 0; font-weight: 700; font-size: 0.8em; }
         .or-divider::before, .or-divider::after { content: ''; flex: 1; border-bottom: 2px solid #f1f2f6; }
+    
+        .opt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .opt-btn { padding: 12px 8px; border: 1.5px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: 700; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; background: white; touch-action: manipulation; }
+        .opt-btn i { font-size: 1.3em; color: var(--primary); }
+        .opt-btn.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+        .mini-btn { background: #eff6ff; color: var(--primary); border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8em; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -301,7 +308,7 @@
                         </div>
                         <div class="input-group">
                             <span class="input-label">Phone Number</span>
-                            <input type="tel" id="regPhone" class="auth-input" placeholder="+977 98XXXXXXXX">
+                            <input type="tel" id="regPhone" class="auth-input" placeholder="+91 98XXXXXXXX">
                             <i class="fas fa-phone"></i>
                         </div>
                         <div class="input-group">
@@ -424,6 +431,12 @@
                 <div class="inner-wrap">
                     <div id="cartItemsContainer"></div>
                     <div id="cart-summary" style="display:none; background:white; padding:20px; border-radius:20px; margin-top:20px; box-shadow:var(--shadow-card);">
+                        <label style="font-weight:700; font-size:0.9em;">How would you like your order?</label>
+                        <div class="opt-grid" style="grid-template-columns:repeat(3,1fr); margin:8px 0 16px 0;">
+                            <div class="opt-btn type-btn" data-type="dine-in" onclick="setOrderType('dine-in')"><i class="fas fa-utensils"></i>Dine-in</div>
+                            <div class="opt-btn type-btn" data-type="parcel" onclick="setOrderType('parcel')"><i class="fas fa-bag-shopping"></i>Parcel</div>
+                            <div class="opt-btn type-btn active" data-type="delivery" onclick="setOrderType('delivery')"><i class="fas fa-motorcycle"></i>Delivery</div>
+                        </div>
                         <div style="display:flex; gap:10px; margin-bottom:15px;">
                             <input type="text" id="couponCodeInput" placeholder="Promo code (e.g. GOAT20)" style="flex:1; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:15px;">
                             <button id="applyCouponBtn" style="background:#0f172a; color:white; border:none; padding:12px 20px; border-radius:12px; font-weight:700; cursor:pointer;">Apply</button>
@@ -431,7 +444,8 @@
                         <div id="couponMessage" style="font-size:0.85em; font-weight:700; margin-bottom:10px;"></div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; color:#64748b;"><span>Subtotal</span><span id="subtotal-price">Rs. 0.00</span></div>
                         <div id="discount-row" style="display:none; justify-content:space-between; margin-bottom:8px; color:var(--success); font-weight:700;"><span>Promo Discount</span><span id="discount-price">-Rs. 0.00</span></div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; color:#64748b;"><span>Delivery Fee</span><span>Rs. 50.00</span></div>
+                        <div id="gst-row" style="display:flex; justify-content:space-between; margin-bottom:8px; color:#64748b;"><span id="gst-label">GST</span><span id="gst-price">Rs. 0.00</span></div>
+                        <div id="fee-row" style="display:flex; justify-content:space-between; margin-bottom:8px; color:#64748b;"><span>Delivery Fee</span><span id="fee-price">Rs. 50.00</span></div>
                         <hr style="border:none; border-top:1px dashed #e2e8f0; margin:14px 0;">
                         <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.3em;"><span>Total</span><span id="total-price" style="color:var(--primary);">Rs. 50.00</span></div>
                         <button class="btn-main" id="goToCheckoutBtn">Proceed to Checkout</button>
@@ -449,6 +463,14 @@
             <div class="scrollable-body">
                 <div class="inner-wrap" style="background:white; padding:24px; border-radius:20px; box-shadow:var(--shadow-card);">
                     <div style="margin-bottom:20px;">
+                        <label style="font-weight:700; font-size:0.95em;">Your Name</label>
+                        <input type="text" id="custName" class="form-control" placeholder="Full name">
+                    </div>
+                    <div id="tableWrap" style="display:none; margin-bottom:20px;">
+                        <label style="font-weight:700; font-size:0.95em;">Table Number</label>
+                        <input type="text" id="tableNo" class="form-control" placeholder="e.g. 5">
+                    </div>
+                    <div style="margin-bottom:20px;">
                         <label style="font-weight:700; font-size:0.95em;">Delivery Address</label>
                         <button class="btn-main" id="geoBtn" style="background:#0f172a; margin-top:8px; font-size:0.9em; padding:12px;"><i class="fas fa-location-dot"></i> Locate My Address</button>
                         <div id="map-container" style="height:170px; border-radius:14px; margin-top:12px; overflow:hidden; display:none;">
@@ -460,7 +482,7 @@
 
                     <div style="margin-bottom:20px;">
                         <label style="font-weight:700; font-size:0.95em;">Contact Phone</label>
-                        <input type="tel" id="contactPhone" class="form-control" placeholder="+977 98XXXXXXXX">
+                        <input type="tel" id="contactPhone" class="form-control" placeholder="+91 98XXXXXXXX">
                     </div>
 
                     <div class="or-divider">VERIFICATION</div>
@@ -481,9 +503,15 @@
 
                     <div style="margin-bottom:20px;">
                         <label style="font-weight:700; font-size:0.95em;">Payment Method</label>
-                        <div style="padding:16px; border:1.5px solid #e2e8f0; border-radius:12px; display:flex; align-items:center; gap:12px; margin-top:8px;">
-                            <i class="fas fa-money-bill-wave" style="color:var(--success); font-size:1.4em;"></i>
-                            <span style="font-weight:700;">Cash on Delivery</span>
+                        <div class="opt-grid" style="margin-top:8px;">
+                            <div class="opt-btn pay-btn active" data-pay="Cash" onclick="setPay('Cash')"><i class="fas fa-money-bill-wave"></i><span id="cashLabel">Cash on Delivery</span></div>
+                            <div class="opt-btn pay-btn" data-pay="UPI QR" onclick="setPay('UPI QR')"><i class="fas fa-qrcode"></i>UPI QR Code</div>
+                        </div>
+                        <div id="upiBox" style="display:none; margin-top:14px; padding:16px; border:1.5px dashed #cbd5e1; border-radius:14px; text-align:center;">
+                            <div id="upiQr" style="display:flex; justify-content:center; margin-bottom:10px;"></div>
+                            <p style="margin:0 0 10px 0; font-weight:700;">Scan &amp; pay <span style="color:var(--primary);" id="upiAmt"></span></p>
+                            <a id="upiLink" href="#" class="btn-main" style="text-decoration:none; font-size:0.9em; padding:12px;"><i class="fas fa-mobile-screen"></i> Pay with UPI App</a>
+                            <input type="text" id="utrInput" class="form-control" inputmode="numeric" maxlength="12" placeholder="After paying, enter 12-digit UTR / Txn ID">
                         </div>
                     </div>
 
@@ -503,6 +531,20 @@
             </div>
         </div>
 
+        <!-- BILL PAGE -->
+        <div id="billPage" class="page">
+            <header class="page-header">
+                <i class="fas fa-arrow-left back-btn" data-target="ordersPage"></i>
+                <h2>Bill</h2>
+            </header>
+            <div class="scrollable-body">
+                <div class="inner-wrap">
+                    <div id="billBody"></div>
+                    <button class="btn-main" onclick="printBill()"><i class="fas fa-print"></i> Print / Save as PDF</button>
+                </div>
+            </div>
+        </div>
+
         <!-- THANK YOU -->
         <div id="thankYouPage" class="page">
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:30px; text-align:center;">
@@ -511,6 +553,7 @@
                 </div>
                 <h2 style="font-family:'Outfit'; font-size:2em; margin:0 0 8px 0;">Order Placed!</h2>
                 <p style="color:#64748b; margin:0 0 25px 0;">Our kitchen has started preparing your order.</p>
+                <button class="btn-main" id="viewBillBtn" style="max-width:280px; background:#0f172a;"><i class="fas fa-file-invoice"></i> View Bill</button>
                 <button class="btn-main" id="trackOrderBtn" style="max-width:280px;">Track Live Status</button>
                 <a href="#" id="backToHomeBtn" style="margin-top:15px; color:#64748b; font-weight:700; text-decoration:none;">Back to Menu</a>
             </div>
@@ -526,7 +569,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
     <script>
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyA_2RcZMqfQQgyXPY3WJ__VOFSPloyuKRQ",
   authDomain: "foodorder1-65003.firebaseapp.com",
   databaseURL: "https://foodorder1-65003-default-rtdb.firebaseio.com",
@@ -549,7 +592,98 @@
 
         let appliedCoupon = null;
         let discountAmount = 0;
-        const deliveryFeeAmount = 50;
+                // ===== RESTAURANT DETAILS (EDIT THESE; keep same in index.html, admin.html, telegram.js) =====
+        const RESTO = { name: 'JavaGoat', address: 'Shop address, Nashik, Maharashtra', phone: '+91 98XXXXXXXX', gstin: '', upiId: 'yourupi@bank', gstPercent: 5, deliveryFee: 50 };
+        const fmt = n => Number(n || 0).toFixed(2);
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function billHTML(o, id) {
+            const items = o.items || [];
+            const sub = parseFloat(o.subtotal || 0), disc = parseFloat(o.discount || 0), total = parseFloat(o.total || 0), gst = parseFloat(o.gst || 0);
+            const fee = o.deliveryFee !== undefined ? parseFloat(o.deliveryFee) : Math.max(0, total - sub + disc - gst);
+            const type = o.orderType || 'delivery';
+            const typeLabel = type === 'dine-in' ? 'Dine-in | Table ' + esc(o.tableNo) : type === 'parcel' ? 'Parcel / Takeaway' : 'Home Delivery';
+            const pm = o.paymentMethod || o.method || 'Cash';
+            const ps = o.paymentStatus || 'Pending';
+            const gp = o.gstPercent !== undefined ? o.gstPercent : RESTO.gstPercent;
+            const bold = 'font-weight:800;font-size:16px;border-top:1px dashed #888;padding-top:8px;';
+            const tr = (l, v, b) => `<tr><td style="padding:3px 0;${b ? bold : ''}">${l}</td><td style="text-align:right;padding:3px 0;${b ? bold : ''}">${v}</td></tr>`;
+            const rows = items.map(i => `<tr><td style="padding:3px 0;">${esc(i.name)}</td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">${fmt(i.price)}</td><td style="text-align:right;">${fmt(i.price * i.quantity)}</td></tr>`).join('');
+            return `<div id="billPrint" style="max-width:380px;margin:0 auto;background:#fff;color:#111;padding:22px;font-family:'Courier New',monospace;font-size:13px;border:1px solid #e2e8f0;border-radius:12px;">
+                <div style="text-align:center;border-bottom:1px dashed #888;padding-bottom:10px;margin-bottom:10px;">
+                    <div style="font-size:20px;font-weight:800;">${esc(RESTO.name)}</div>
+                    <div>${esc(RESTO.address)}</div><div>Ph: ${esc(RESTO.phone)}</div>
+                    ${RESTO.gstin ? `<div>GSTIN: ${esc(RESTO.gstin)}</div>` : ''}
+                </div>
+                <div>Bill No: <b>#${esc(String(id).substring(1, 7))}</b></div>
+                <div>Date: ${new Date(o.timestamp).toLocaleString('en-IN')}</div>
+                <div>Type: <b>${typeLabel}</b></div>
+                <div>Customer: ${esc(o.customerName || o.email || 'Guest')}${o.phone && type !== 'delivery' ? ' (' + esc(o.phone) + ')' : ''}</div>
+                ${type === 'delivery' ? `<div>Phone: ${esc(o.phone)}</div><div>Address: ${esc(o.address)}</div>` : ''}
+                <table style="width:100%;border-collapse:collapse;margin-top:10px;border-top:1px dashed #888;">
+                    <tr style="border-bottom:1px dashed #888;"><th style="text-align:left;padding:5px 0;">Item</th><th>Qty</th><th style="text-align:right;">Rate</th><th style="text-align:right;">Amt</th></tr>${rows}
+                </table>
+                <table style="width:100%;border-collapse:collapse;margin-top:8px;border-top:1px dashed #888;">
+                    ${tr('Subtotal', 'Rs. ' + fmt(sub))}
+                    ${disc > 0 ? tr('Discount (' + esc(o.couponUsed) + ')', '-Rs. ' + fmt(disc)) : ''}
+                    ${gst > 0 ? tr('GST (' + gp + '%)', 'Rs. ' + fmt(gst)) : ''}
+                    ${fee > 0 ? tr('Delivery Fee', 'Rs. ' + fmt(fee)) : ''}
+                    ${tr('GRAND TOTAL', 'Rs. ' + fmt(total), true)}
+                </table>
+                <div style="margin-top:10px;border-top:1px dashed #888;padding-top:8px;">Payment: <b>${esc(pm)}</b> - <b style="color:${ps === 'Paid' ? '#15803d' : '#b45309'};">${esc(ps)}</b>${o.utr ? `<br>UTR: ${esc(o.utr)}` : ''}</div>
+                <div style="text-align:center;margin-top:12px;font-weight:700;">Thank you! Visit again.</div>
+            </div>`;
+        }
+        function printBillHTML(o, id) {
+            const w = window.open('', '_blank');
+            if (!w) return alert('Please allow popups to print the bill');
+            w.document.write('<html><head><title>Bill</title></head><body style="margin:0;padding:10px;background:#fff;">' + billHTML(o, id) + '</body></html>');
+            w.document.close(); w.focus(); setTimeout(() => w.print(), 400);
+        }
+
+        let orderType = 'delivery', payMethod = 'Cash', lastOrderId = null;
+        window.myOrders = {};
+        const urlTable = new URLSearchParams(location.search).get('table');
+        const cartSub = () => cart.reduce((a, b) => a + b.price * b.quantity, 0);
+        function calcTotals(sub) {
+            const disc = Math.min(discountAmount, sub);
+            const gst = (sub - disc) * RESTO.gstPercent / 100;
+            const fee = orderType === 'delivery' ? RESTO.deliveryFee : 0;
+            return { disc, gst, fee, total: sub - disc + gst + fee };
+        }
+        window.setOrderType = t => {
+            orderType = t;
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+            updateCartUI(); applyCheckoutMode(); refreshUpi();
+        };
+        function applyCheckoutMode() {
+            document.getElementById('addressText').parentElement.style.display = orderType === 'delivery' ? 'block' : 'none';
+            document.getElementById('tableWrap').style.display = orderType === 'dine-in' ? 'block' : 'none';
+            document.getElementById('cashLabel').textContent = orderType === 'delivery' ? 'Cash on Delivery' : (orderType === 'dine-in' ? 'Cash at Counter' : 'Cash at Pickup');
+            checkOrderValidity();
+        }
+        window.setPay = m => {
+            payMethod = m;
+            document.querySelectorAll('.pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === m));
+            document.getElementById('upiBox').style.display = m === 'UPI QR' ? 'block' : 'none';
+            refreshUpi();
+        };
+        function refreshUpi() {
+            if (payMethod !== 'UPI QR' || typeof QRCode === 'undefined') return;
+            const total = fmt(calcTotals(cartSub()).total);
+            const link = `upi://pay?pa=${encodeURIComponent(RESTO.upiId)}&pn=${encodeURIComponent(RESTO.name)}&am=${total}&cu=INR&tn=${encodeURIComponent(RESTO.name + ' Order')}`;
+            const box = document.getElementById('upiQr'); box.innerHTML = '';
+            new QRCode(box, { text: link, width: 190, height: 190 });
+            document.getElementById('upiAmt').textContent = 'Rs. ' + total;
+            document.getElementById('upiLink').href = link;
+        }
+        window.showBill = id => {
+            const o = window.myOrders[id]; if (!o) return;
+            window.currentBillId = id;
+            document.getElementById('billBody').innerHTML = billHTML(o, id);
+            showPage('billPage');
+        };
+        window.printBill = () => { const id = window.currentBillId; if (id) printBillHTML(window.myOrders[id], id); };
 
         const showPage = (id) => {
             document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
@@ -558,6 +692,9 @@
                 else if (nav.dataset.page || nav.dataset.target) nav.classList.remove('active');
             });
             if (id === 'checkoutPage') {
+                applyCheckoutMode(); refreshUpi();
+                const cn = document.getElementById('custName');
+                if (!cn.value && currentUser) cn.value = currentUser.displayName || '';
                 setTimeout(() => { if (map) map.invalidateSize(); }, 300);
                 if (currentUser) document.getElementById('verifyEmail').value = currentUser.email || '';
                 checkOrderValidity();
@@ -578,6 +715,7 @@
         });
         document.getElementById('goToCheckoutBtn').onclick = () => showPage('checkoutPage');
         document.getElementById('trackOrderBtn').onclick = () => showPage('ordersPage');
+        document.getElementById('viewBillBtn').onclick = () => showBill(lastOrderId);
         document.getElementById('backToHomeBtn').onclick = e => { e.preventDefault(); showPage('appContainer'); };
 
         // Realtime Auth State Listener
@@ -686,22 +824,17 @@
         phoneInput.addEventListener('input', checkOrderValidity);
 
         function checkOrderValidity() {
-            if (phoneInput.value.trim().length > 5 || isVerified) {
-                orderBtn.disabled = false;
-                orderBtn.style.opacity = '1';
-                orderBtn.textContent = "Confirm Order";
-            } else {
-                orderBtn.disabled = true;
-                orderBtn.style.opacity = '0.6';
-                orderBtn.textContent = "Enter Phone OR Verify Email";
-            }
+            const ok = orderType === 'dine-in' ? !!document.getElementById('tableNo').value.trim() : (phoneInput.value.trim().length > 5 || isVerified);
+            orderBtn.disabled = !ok;
+            orderBtn.style.opacity = ok ? '1' : '0.6';
+            orderBtn.textContent = ok ? 'Confirm Order' : (orderType === 'dine-in' ? 'Enter Table Number' : 'Enter Phone OR Verify Email');
         }
 
         // Geolocation with Leaflet Map
         document.getElementById('geoBtn').addEventListener('click', () => {
             document.getElementById('map-container').style.display = 'block';
             if (!map) {
-                map = L.map('map').setView([27.7172, 85.3240], 13);
+                map = L.map('map').setView([19.9975, 73.7898], 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             }
             map.invalidateSize();
@@ -711,7 +844,7 @@
                     if (marker) map.removeLayer(marker);
                     marker = L.marker([lat, lng]).addTo(map);
                     map.setView([lat, lng], 16);
-                    document.getElementById('addressText').value = "Kathmandu, Nepal (GPS Set)";
+                    document.getElementById('addressText').value = 'GPS location set - add house no. / landmark';
                     document.getElementById('lat').value = lat;
                     document.getElementById('lng').value = lng;
                 });
@@ -815,7 +948,7 @@
             if (appliedCoupon === 'GOAT20') discountAmount = sub * 0.20;
             if (discountAmount > sub) discountAmount = sub;
 
-            const total = sub - discountAmount + deliveryFeeAmount;
+            const T = calcTotals(sub); const total = T.total;
             document.getElementById('subtotal-price').textContent = `Rs. ${sub.toFixed(2)}`;
             const dRow = document.getElementById('discount-row');
             if (discountAmount > 0) {
@@ -823,6 +956,11 @@
                 document.getElementById('discount-price').textContent = `-Rs. ${discountAmount.toFixed(2)}`;
             } else dRow.style.display = 'none';
             document.getElementById('total-price').textContent = `Rs. ${total.toFixed(2)}`;
+            document.getElementById('fee-row').style.display = T.fee > 0 ? 'flex' : 'none';
+            document.getElementById('fee-price').textContent = `Rs. ${fmt(T.fee)}`;
+            document.getElementById('gst-row').style.display = RESTO.gstPercent > 0 ? 'flex' : 'none';
+            document.getElementById('gst-label').textContent = `GST (${RESTO.gstPercent}%)`;
+            document.getElementById('gst-price').textContent = `Rs. ${fmt(T.gst)}`;
         }
 
         window.modQty = (id, n) => {
@@ -853,30 +991,50 @@
         // Place Order
         orderBtn.onclick = () => {
             const phone = phoneInput.value.trim();
+            const name = document.getElementById('custName').value.trim();
+            const tableNo = document.getElementById('tableNo').value.trim();
             const address = document.getElementById('addressText').value.trim();
-            if (!address) return alert('Please enter delivery address');
+            const utr = document.getElementById('utrInput').value.trim();
+            if (!name) return alert('Please enter your name');
+            if (orderType === 'dine-in' && !tableNo) return alert('Please enter table number');
+            if (orderType === 'delivery' && !address) return alert('Please enter delivery address');
+            if (payMethod === 'UPI QR' && !/^\d{12}$/.test(utr)) return alert('Pay using the QR code, then enter the 12-digit UTR / transaction ID');
 
-            const sub = cart.reduce((a, b) => a + b.price * b.quantity, 0);
-            const total = (sub - discountAmount + deliveryFeeAmount).toFixed(2);
-
+            const sub = cartSub();
+            const T = calcTotals(sub);
             const order = {
                 userId: currentUser.uid,
                 email: currentUser.email || 'guest@javagoat.com',
+                customerName: name,
                 phone: phone,
-                address: address,
+                orderType: orderType,
+                tableNo: orderType === 'dine-in' ? tableNo : '',
+                address: orderType === 'delivery' ? address : '',
                 items: cart,
-                subtotal: sub.toFixed(2),
-                discount: discountAmount.toFixed(2),
+                subtotal: fmt(sub),
+                discount: fmt(T.disc),
                 couponUsed: appliedCoupon || 'None',
-                total: total,
+                gstPercent: RESTO.gstPercent,
+                gst: fmt(T.gst),
+                deliveryFee: fmt(T.fee),
+                total: fmt(T.total),
                 status: 'Placed',
+                method: payMethod === 'Cash' ? (orderType === 'delivery' ? 'Cash on Delivery' : 'Cash at Counter') : 'UPI QR',
+                paymentMethod: payMethod,
+                paymentStatus: 'Pending',
+                utr: utr,
                 timestamp: new Date().toISOString()
             };
 
-            db.ref('orders').push(order).then(() => {
+            orderBtn.disabled = true;
+            const ref = db.ref('orders').push();
+            ref.set(order).then(() => {
+                lastOrderId = ref.key;
+                window.myOrders[ref.key] = order;
                 cart = []; appliedCoupon = null; updateCartUI();
+                document.getElementById('utrInput').value = '';
                 showPage('thankYouPage');
-            });
+            }).catch(e => { alert('Order failed: ' + e.message); orderBtn.disabled = false; });
         };
 
         // Load Active Orders
@@ -890,6 +1048,7 @@
                 s.forEach(child => {
                     if (child.val().userId === currentUser.uid) list.push({ k: child.key, ...child.val() });
                 });
+                list.forEach(o => window.myOrders[o.k] = o);
                 if (list.length === 0) return c.innerHTML = '<p style="text-align:center; padding:30px; color:#94a3b8; font-weight:600;">No orders placed yet.</p>';
                 list.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(o => {
                     c.innerHTML += `
@@ -899,11 +1058,18 @@
                                 <span style="background:#eff6ff; color:var(--primary); padding:4px 10px; border-radius:8px; font-size:0.85em;">${o.status}</span>
                             </div>
                             <p style="color:#64748b; font-size:0.9em; margin:0 0 10px 0;">${o.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</p>
-                            <span style="font-weight:800; font-size:1.1em;">Total: Rs. ${o.total}</span>
+                            <div style="font-size:0.8em; color:#64748b; margin-bottom:8px;">${o.orderType === 'dine-in' ? '🍽️ Dine-in, Table ' + esc(o.tableNo) : o.orderType === 'parcel' ? '🛍️ Parcel' : '🛵 Delivery'} &middot; ${esc(o.paymentMethod || 'Cash')} (${esc(o.paymentStatus || 'Pending')})</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:800; font-size:1.1em;">Total: Rs. ${o.total}</span>
+                                <button class="mini-btn" onclick="showBill('${o.k}')"><i class="fas fa-file-invoice"></i> Bill</button>
+                            </div>
                         </div>`;
                 });
             });
         }
+    
+        document.getElementById('tableNo').addEventListener('input', checkOrderValidity);
+        if (urlTable) { document.getElementById('tableNo').value = urlTable; setOrderType('dine-in'); }
     </script>
 </body>
 </html>
