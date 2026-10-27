@@ -19,6 +19,7 @@ function limited(key, max = 20, windowMs = 10 * 60 * 1000) {
 async function loadMenu() {
   const r = await fetch(`${FIREBASE_DB_URL}/dishes.json`);
   const d = (await r.json()) || {};
+  if (typeof d.error === 'string') throw new Error(d.error);
   return Object.keys(d).slice(0, 200).map(id => ({
     id,
     name: String(d[id].name || '').slice(0, 80),
