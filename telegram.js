@@ -1,4 +1,6 @@
-const { askAI, FRIENDLY } = require('./ai.js');
+// AI is optional: if ai.js is missing or fails to load, the bot still works normally
+let askAI = async () => ({ error: 'not_configured' }), FRIENDLY = {}, aiLoaded = false;
+try { ({ askAI, FRIENDLY } = require('./ai.js')); aiLoaded = true; } catch (e) { console.error('ai.js not loaded:', e.message); }
 const FIREBASE_DB_URL = "https://foodorder1-65003-default-rtdb.firebaseio.com";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || ""; // optional: your own Telegram chat id for new-order alerts
@@ -40,7 +42,11 @@ const fb = async (path, method = 'GET', body) => {
     headers: { 'Content-Type': 'application/json' },
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
-  return r.json();
+  const out = await r.json();
+  if (out && typeof out === 'object' && !Array.isArray(out) && typeof out.error === 'string') {
+    throw new Error('Firebase error: ' + out.error + ' (check Realtime Database rules and databaseURL)');
+  }
+  return out;
 };
 
 const calc = (cart, type) => {
@@ -316,7 +322,21 @@ async function handle(chatId, input, isCb, from) {
 }
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(200).send('OK');
+  if (req.method !== 'POST') {
+    if (req.method === 'GET') {
+      // Health check: open https://YOUR-SITE/telegram in the browser
+      const out = { ok: true, tokenSet: !!BOT_TOKEN, aiModuleLoaded: aiLoaded, aiKeySet: !!process.env.ANTHROPIC_API_KEY };
+      try { await fb('dishes'); out.firebase = 'ok'; } catch (e) { out.firebase = e.message; }
+      if (BOT_TOKEN) {
+        try {
+          const w = await (await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo`)).json();
+          out.webhook = w.ok ? { url: w.result.url || '(NOT SET)', pendingUpdates: w.result.pending_update_count, lastError: w.result.last_error_message || null } : 'invalid bot token';
+        } catch (e) { out.webhook = 'could not reach Telegram'; }
+      }
+      return res.status(200).json(out);
+    }
+    return res.status(200).send('OK');
+  }
   const update = req.body || {};
   try {
     if (update.action === 'notify' && update.orderId) {
@@ -330,6 +350,9 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     console.error('Telegram Webhook Error:', error);
+    const cid = (update.message && update.message.chat.id) || (update.callback_query && update.callback_query.message && update.callback_query.message.chat.id);
+    if (cid) await send(cid, '⚠️ Sorry, something went wrong on our side. Please try again in a moment.');
+    if (ADMIN_CHAT_ID) await send(ADMIN_CHAT_ID, '🛠️ Bot error: ' + esc(String(error.message).slice(0, 300)));
   }
   return res.status(200).send('OK');
 };
