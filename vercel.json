@@ -20,12 +20,20 @@
     {
       "src": "telegram.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "chat.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/send-otp",
       "dest": "/send-otp.js"
+    },
+    {
+      "src": "/chat",
+      "dest": "/chat.js"
     },
     {
       "src": "/telegram",
