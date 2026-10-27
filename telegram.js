@@ -1,3 +1,4 @@
+const { askAI, FRIENDLY } = require('./ai.js');
 const FIREBASE_DB_URL = "https://foodorder1-65003-default-rtdb.firebaseio.com";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || ""; // optional: your own Telegram chat id for new-order alerts
@@ -48,6 +49,11 @@ const calc = (cart, type) => {
   const fee = type === 'delivery' ? RESTO.deliveryFee : 0;
   return { sub, gst, fee, total: sub + gst + fee };
 };
+
+const CART_KB = [
+  [{ text: '➕ Add more', callback_data: 'more' }, { text: '✅ Checkout', callback_data: 'checkout' }],
+  [{ text: '🗑️ Clear cart', callback_data: 'clear' }]
+];
 
 const cartText = (s) => {
   const T = calc(s.cart, s.orderType);
@@ -198,6 +204,16 @@ async function handle(chatId, input, isCb, from) {
     }
   };
 
+  // AI assistant: answers questions and can add dishes to the cart
+  const aiChat = async (text, canOrder) => {
+    const history = (s.chat || []).slice(-6);
+    const ai = await askAI({ messages: [...history, { role: 'user', content: text }], cart: s.cart, orderType: s.orderType || 'delivery', key: 'tg:' + chatId, canOrder });
+    if (ai.error) return ai.error === 'not_configured' ? null : { reply: FRIENDLY[ai.error] || FRIENDLY.api, actions: [] };
+    const note = ai.actions.length ? ` [Added to basket: ${ai.actions.map(a => a.quantity + 'x ' + a.name).join(', ')}]` : '';
+    s.chat = [...history, { role: 'user', content: text.slice(0, 300) }, { role: 'assistant', content: (ai.reply + note).slice(0, 600) }].slice(-8);
+    return ai;
+  };
+
   // ---------- Button presses ----------
   if (isCb) {
     const idx = input.indexOf(':');
@@ -246,6 +262,21 @@ async function handle(chatId, input, isCb, from) {
     const q = lower;
     const matches = Object.keys(dishes).filter(k => String(dishes[k].name || '').toLowerCase().includes(q));
     if (!matches.length) {
+      const ai = await aiChat(input, true);
+      if (ai) {
+        if (ai.actions && ai.actions.length) {
+          ai.actions.forEach(a => {
+            const ex = s.cart.find(i => i.id === a.id);
+            if (ex) ex.quantity += a.quantity; else s.cart.push({ id: a.id, name: a.name, price: a.price, img: a.img || '', quantity: a.quantity });
+          });
+          s.step = 'cart_menu';
+          await save();
+          await send(chatId, '🤖 ' + esc(ai.reply));
+          return send(chatId, cartText(s), CART_KB);
+        }
+        await save();
+        return send(chatId, '🤖 ' + esc(ai.reply) + '\n\n<i>Type a dish name to add it, or /menu to see everything.</i>');
+      }
       return send(chatId, `❌ Sorry, "<b>${esc(input)}</b>" is not on our menu.\nTry another name or type /menu.`);
     }
     const avail = matches.filter(k => dishes[k].available !== false);
@@ -277,6 +308,10 @@ async function handle(chatId, input, isCb, from) {
     return send(chatId, 'Please use the buttons above 👆 or type /cancel to start over.');
   }
 
+  if (input.length > 2) {
+    const ai = await aiChat(input, false);
+    if (ai) { await save(); return send(chatId, '🤖 ' + esc(ai.reply) + '\n\n<i>Type /start to place an order.</i>'); }
+  }
   return send(chatId, 'Type /start to begin food ordering!');
 }
 
